@@ -8,7 +8,7 @@
 std::condition_variable isStackFull;
 std::condition_variable isStackEmpty;
 std::mutex pushStack;
-std::mutex popStack;
+//std::mutex popStack;
 
 using Ms = std::chrono::milliseconds;
 
@@ -16,7 +16,7 @@ void FillStack(MyStack& s)
 {
 	std::srand(std::time(0));
 	
-	std::unique_lock<std::mutex> fill_lk(popStack);
+	std::unique_lock<std::mutex> fill_lk(pushStack);
 	isStackEmpty.wait(fill_lk, [&s]() {return s.IsEmpty(); });
 	
 	std::cout<<"Thread id: " << std::this_thread::get_id() << " do FillStack(): ";
@@ -58,8 +58,9 @@ int main()
 	
 	while (true)
 	{
-		t1 = std::thread(FillStack, std::ref(s));
 		t2 = std::thread(PopStack, std::ref(s));
+		t1 = std::thread(FillStack, std::ref(s));
+		
 		t1.join();
 		t2.join();
 	}
